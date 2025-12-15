@@ -10,7 +10,7 @@ import (
 
 func NewRedisClient() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "redis-12543.c273.us-east-1-2.ec2.cloud.redislabs.com:12543",
+		Addr:     os.Getenv("REDIS_HOST"),
 		Username: "default",
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
