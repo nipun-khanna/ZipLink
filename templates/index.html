@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial scale=1.0" />
+        <title>ZipLink</title>
+        <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen flex items-center justify-center">
+        <div class="bg-white/90 p-10 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200">
+            <div class="flex flex-col items-center mb-6">
+                <div class="bg-blue-500 rounded-full p-3 mb-2 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-8 h-8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-3A2.25 2.25 0 008.25 5.25V9m7.5 0v10.5A2.25 2.25 0 0113.5 21h-3a2.25 2.25 0 01-2.25-2.25V9m7.5 0H8.25m7.5 0a2.25 2.25 0 012.25 2.25v7.5A2.25 2.25 0 0115.75 21H8.25A2.25 2.25 0 016 19.75v-7.5A2.25 2.25 0 018.25 9" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">ZipLink</h1>
+                <p class="text-gray-500 mt-1 text-sm">Simple & Fast URL Shortener</p>
+            </div>
+            <form hx-post="/shorten" hx-target="#result" hx-swap="innerHTML" class="space-y-4">
+                <input type="url" name="url" placeholder="Paste your long URL here..." class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required />
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white p-3 rounded-lg font-semibold shadow hover:from-blue-600 hover:to-purple-600 transition"> 
+                    Shorten URL
+                </button>
+            </form>
+            <div id="result" class="mt-6"></div>
+        </div>
+    </body>
+</html>
