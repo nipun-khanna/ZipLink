@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/go-redis/redis/v8"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func NewRedisClient() *redis.Client {
@@ -30,4 +34,35 @@ func GetLongURL(ctx *context.Context, rdb *redis.Client, shortURL string) (strin
 		return "", fmt.Errorf("failed to retrieve from Redis: %v", err)
 	}
 	return longURL, nil
+}
+
+func NewMongoClient() (*mongo.Client, error) {
+	uri := os.Getenv("MONGO_URI")
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+func SaveURLToDB(ctx context.Context, client *mongo.Client, code, longURL string) error {
+	collection := client.Database("ziplink").Collection("main")
+	_, err := collection.InsertOne(ctx, bson.M{
+		"code":       code,
+		"long_url":   longURL,
+		"created_at": time.Now(),
+	})
+	return err
+}
+
+func GetURLFromDB(ctx context.Context, client *mongo.Client, code string) (string, error) {
+	collection := client.Database("ziplink").Collection("main")
+	var result struct {
+		LongURL string `bson:"long_url"`
+	}
+	err := collection.FindOne(ctx, bson.M{"code": code}).Decode(&result)
+	if err != nil {
+		return "", err
+	}
+	return result.LongURL, nil
 }
