@@ -45,8 +45,8 @@ func NewMongoClient() (*mongo.Client, error) {
 	return client, nil
 }
 
-func SaveURLToDB(ctx context.Context, client *mongo.Client, code, longURL string) error {
-	collection := client.Database("ziplink").Collection("main")
+func SaveURLToMongo(ctx context.Context, client *mongo.Client, code, longURL string) error {
+	collection := client.Database("ziplink_main").Collection("urls")
 	_, err := collection.InsertOne(ctx, bson.M{
 		"code":       code,
 		"long_url":   longURL,
@@ -55,8 +55,8 @@ func SaveURLToDB(ctx context.Context, client *mongo.Client, code, longURL string
 	return err
 }
 
-func GetURLFromDB(ctx context.Context, client *mongo.Client, code string) (string, error) {
-	collection := client.Database("ziplink").Collection("main")
+func GetURLFromMongo(ctx context.Context, client *mongo.Client, code string) (string, error) {
+	collection := client.Database("ziplink_main").Collection("urls")
 	var result struct {
 		LongURL string `bson:"long_url"`
 	}

@@ -14,12 +14,18 @@ var ctx = context.Background()
 
 func main() {
 	godotenv.Load()
-	dbClient := utils.NewRedisClient()
+	redisCli := utils.NewRedisClient()
+	mongoCli, err := utils.NewMongoClient()
 
-	if dbClient == nil {
-		fmt.Println("Failed to connect to database")
+	if err != nil {
+		fmt.Println("Failed to connect to MongoDB: ", err)
+		return
+	} else if redisCli == nil {
+		fmt.Println("Failed to connect to Redis")
 		return
 	}
+
+	defer mongoCli.Disconnect(context.Background())
 
 	http.HandleFunc("/", func(writer http.ResponseWriter, req *http.Request) {
 		tmpl := template.Must(template.ParseFiles("templates/index.html"))
@@ -31,7 +37,8 @@ func main() {
 		shortCode := utils.GetShortCode()
 		shortURL := fmt.Sprintf("http://localhost:8080/r/%s", shortCode)
 
-		utils.SetKey(&ctx, dbClient, shortCode, url, 0)
+		utils.SetKey(&ctx, redisCli, shortCode, url, 0)
+		utils.SaveURLToMongo(ctx, mongoCli, shortCode, url)
 
 		fmt.Fprintf(writer,
 			`<div class="flex flex-col items-center bg-green-50 border border-green-200 rounded-xl p-4 shadow mt-4 animate-fade-in">
@@ -51,15 +58,18 @@ func main() {
 			return
 		}
 
-		longURL, err := utils.GetLongURL(&ctx, dbClient, key)
+		longURL, err := utils.GetLongURL(&ctx, redisCli, key)
 		if err != nil {
-			http.Error(writer, "ZipLink not found", http.StatusNotFound)
-			fmt.Printf("Error: %v\n", err)
-			return
+			longURL, err = utils.GetURLFromMongo(ctx, mongoCli, key)
+			if err != nil {
+				http.Error(writer, "ZipLink not found", http.StatusNotFound)
+				fmt.Printf("Error: %v\n", err)
+				return
+			}
 		}
 		http.Redirect(writer, req, longURL, http.StatusPermanentRedirect)
 	})
 
-	fmt.Println("Server is started on port 8080")
+	fmt.Println("Server is started - http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
