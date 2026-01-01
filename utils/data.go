@@ -66,3 +66,18 @@ func GetURLFromMongo(ctx context.Context, client *mongo.Client, code string) (st
 	}
 	return result.LongURL, nil
 }
+
+func GetNextID(ctx context.Context, client *mongo.Client) (int, error) {
+	collection := client.Database("ziplink_main").Collection("counters")
+	var result struct {
+		Seq int
+	}
+	filter := bson.M{"_id": "urlid"}
+	update := bson.M{"$inc": bson.M{"seq": 1}}
+	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+	err := collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&result)
+	if err != nil {
+		return -1, err
+	}
+	return result.Seq, nil
+}

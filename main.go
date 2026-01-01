@@ -34,7 +34,12 @@ func main() {
 
 	http.HandleFunc("/shorten", func(writer http.ResponseWriter, req *http.Request) {
 		url := req.FormValue("url")
-		shortCode := utils.GetShortCode()
+		id, err := utils.GetNextID(ctx, mongoCli)
+		if err != nil {
+			http.Error(writer, "Failed to generate short code", http.StatusInternalServerError)
+			return
+		}
+		shortCode := utils.IDToShortURL(id)
 		shortURL := fmt.Sprintf("http://localhost:8080/r/%s", shortCode)
 
 		utils.SetKey(&ctx, redisCli, shortCode, url, 0)

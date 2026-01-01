@@ -1,16 +1,27 @@
 package utils
 
-import (
-	"encoding/base64"
-	"fmt"
-	"time"
-)
+func IDToShortURL(id int) string {
+	charset := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	shortURL := ""
 
-func GetShortCode() string {
-	timestamp := time.Now().UnixNano()
-	timestampBytes := []byte(fmt.Sprintf("%d", timestamp))
+	for id > 0 {
+		shortURL = string(charset[id%62]) + shortURL
+		id = id / 62
+	}
+	return shortURL
+}
 
-	key := base64.URLEncoding.EncodeToString(timestampBytes)
-	key = key[:len(key)-2]
-	return key[16:]
+func ShortURLToID(url string) int {
+	id := 0
+	for i := 0; i < len(url); i++ {
+		c := int(url[i])
+		if c >= int('a') && c <= int('z') {
+			id = id*62 + c - int('a')
+		} else if c >= int('A') && c <= int('Z') {
+			id = id*62 + c - int('A') + 26
+		} else {
+			id = id*62 + c - int('0') + 52
+		}
+	}
+	return id
 }
